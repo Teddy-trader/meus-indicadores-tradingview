@@ -1,0 +1,108 @@
+//@version=4
+study('teddy op falso', overlay=true)
+
+
+
+
+lenH = input(title='Length High', type=input.integer, defval=20, minval=1)
+lenL = input(title='Length Low', type=input.integer, defval=20, minval=1)
+
+
+
+
+var linhasH = array.new_line()
+var rompsH  = array.new_int()
+var ladoH   = array.new_bool()
+var linhasL = array.new_line()
+var rompsL  = array.new_int()
+var ladoL   = array.new_bool()
+
+
+
+
+fun(src, len, isHigh, _style, _yloc, _color) =>
+    // len 이전 값 : src[len]
+    // nz : 값이 없으면 0으로 만들어준다.
+    p = nz(src[len])
+    isFound = true
+    for i = 0 to len * 2
+        // High를 구할 때는, p 보다 큰 값이 있는지 확인한다.
+        if isHigh and src[i] > p
+            // 더 큰 값이 있으면 src[len] 은 Pivot High가 아니다.
+            isFound := false
+        // Low를 구할 때는, p 보다 작은 값이 있는지 확인한다.
+        if not isHigh and src[i] < p
+            // 더 작은 값이 있으면 src[len] 은 Pivot Low가 아니다.
+            isFound := false
+
+
+
+
+    if isFound
+        // x 좌표는 bar_index[len] : 현재 bar에서 len 이전
+        ln = line.new(bar_index[len], p, bar_index, p, extend=extend.right, color=_color)
+        if isHigh
+            array.push(linhasH, ln)
+            array.push(rompsH,  0)
+            array.push(ladoH,   close > p)
+        else
+            array.push(linhasL, ln)
+            array.push(rompsL,  0)
+            array.push(ladoL,   close < p)
+
+
+
+
+fun(high, lenH, true,  label.style_labeldown, yloc.abovebar, color.red)
+fun(low,  lenL, false, label.style_labelup,   yloc.belowbar, color.lime)
+
+
+
+
+// 2º rompimento — atualiza contadores (loop do maior índice para o menor)
+nH = array.size(linhasH)
+if nH > 0
+    for i = nH - 1 to 0
+        lv   = line.get_y1(array.get(linhasH, i))
+        novo = close > lv
+        if novo != array.get(ladoH, i)
+            array.set(rompsH, i, array.get(rompsH, i) + 1)
+        array.set(ladoH, i, novo)
+
+
+
+
+nL = array.size(linhasL)
+if nL > 0
+    for j = nL - 1 to 0
+        lv   = line.get_y1(array.get(linhasL, j))
+        novo = close < lv
+        if novo != array.get(ladoL, j)
+            array.set(rompsL, j, array.get(rompsL, j) + 1)
+        array.set(ladoL, j, novo)
+
+
+
+
+// deletar HIGH com 2+ rompimentos (loop reverso para não afetar índices)
+nH2 = array.size(linhasH)
+if nH2 > 0
+    for i = nH2 - 1 to 0
+        if array.get(rompsH, i) >= 2
+            line.delete(array.get(linhasH, i))
+            array.remove(linhasH, i)
+            array.remove(rompsH,  i)
+            array.remove(ladoH,   i)
+
+
+
+
+// deletar LOW com 2+ rompimentos
+nL2 = array.size(linhasL)
+if nL2 > 0
+    for j = nL2 - 1 to 0
+        if array.get(rompsL, j) >= 2
+            line.delete(array.get(linhasL, j))
+            array.remove(linhasL, j)
+            array.remove(rompsL,  j)
+            array.remove(ladoL,   j)
