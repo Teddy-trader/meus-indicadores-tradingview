@@ -1,0 +1,93 @@
+
+//@version=6
+indicator("Velas Tempos Maiores", overlay=true, max_boxes_count=10, max_lines_count=20, max_labels_count=10)
+
+color corAlta   = input.color(color.new(#26a69a, 0), "Cor vela de alta")
+color corBaixa  = input.color(color.new(#ef5350, 0), "Cor vela de baixa")
+int   largura   = input.int(6,  "Largura das velas (barras)", minval=2, maxval=20)
+int   distancia = input.int(10, "Distância da última vela",   minval=3, maxval=50)
+
+[o10, h10, l10, c10] = request.security(syminfo.tickerid, "10",  [open, high, low, close], lookahead=barmerge.lookahead_on)
+[o15, h15, l15, c15] = request.security(syminfo.tickerid, "15",  [open, high, low, close], lookahead=barmerge.lookahead_on)
+[o30, h30, l30, c30] = request.security(syminfo.tickerid, "30",  [open, high, low, close], lookahead=barmerge.lookahead_on)
+[o60, h60, l60, c60] = request.security(syminfo.tickerid, "60",  [open, high, low, close], lookahead=barmerge.lookahead_on)
+
+var box   bx10 = na
+var box   bx15 = na
+var box   bx30 = na
+var box   bx60 = na
+var line  pw10 = na
+var line  pl10 = na
+var line  pw15 = na
+var line  pl15 = na
+var line  pw30 = na
+var line  pl30 = na
+var line  pw60 = na
+var line  pl60 = na
+var label lb10 = na
+var label lb15 = na
+var label lb30 = na
+var label lb60 = na
+
+int esp   = largura + 3
+int pos10 = bar_index + distancia
+int pos15 = bar_index + distancia + esp
+int pos30 = bar_index + distancia + esp * 2
+int pos60 = bar_index + distancia + esp * 3
+
+if barstate.islast
+    if not na(bx10)
+        box.delete(bx10)
+    if not na(pw10)
+        line.delete(pw10)
+    if not na(pl10)
+        line.delete(pl10)
+    if not na(lb10)
+        label.delete(lb10)
+    color cor10 = c10 >= o10 ? corAlta : corBaixa
+    bx10 := box.new(pos10 - largura/2, math.max(o10,c10), pos10 + largura/2, math.min(o10,c10), xloc=xloc.bar_index, bgcolor=cor10, border_color=cor10)
+    pw10 := h10 > math.max(o10,c10) ? line.new(pos10, h10, pos10, math.max(o10,c10), xloc=xloc.bar_index, color=cor10) : na
+    pl10 := l10 < math.min(o10,c10) ? line.new(pos10, math.min(o10,c10), pos10, l10, xloc=xloc.bar_index, color=cor10) : na
+    lb10 := label.new(pos10, l10, "M10", xloc=xloc.bar_index, style=label.style_label_up, color=color.new(color.black,100), textcolor=color.gray, size=size.small)
+
+    if not na(bx15)
+        box.delete(bx15)
+    if not na(pw15)
+        line.delete(pw15)
+    if not na(pl15)
+        line.delete(pl15)
+    if not na(lb15)
+        label.delete(lb15)
+    color cor15 = c15 >= o15 ? corAlta : corBaixa
+    bx15 := box.new(pos15 - largura/2, math.max(o15,c15), pos15 + largura/2, math.min(o15,c15), xloc=xloc.bar_index, bgcolor=cor15, border_color=cor15)
+    pw15 := h15 > math.max(o15,c15) ? line.new(pos15, h15, pos15, math.max(o15,c15), xloc=xloc.bar_index, color=cor15) : na
+    pl15 := l15 < math.min(o15,c15) ? line.new(pos15, math.min(o15,c15), pos15, l15, xloc=xloc.bar_index, color=cor15) : na
+    lb15 := label.new(pos15, l15, "M15", xloc=xloc.bar_index, style=label.style_label_up, color=color.new(color.black,100), textcolor=color.gray, size=size.small)
+
+    if not na(bx30)
+        box.delete(bx30)
+    if not na(pw30)
+        line.delete(pw30)
+    if not na(pl30)
+        line.delete(pl30)
+    if not na(lb30)
+        label.delete(lb30)
+    color cor30 = c30 >= o30 ? corAlta : corBaixa
+    bx30 := box.new(pos30 - largura/2, math.max(o30,c30), pos30 + largura/2, math.min(o30,c30), xloc=xloc.bar_index, bgcolor=cor30, border_color=cor30)
+    pw30 := h30 > math.max(o30,c30) ? line.new(pos30, h30, pos30, math.max(o30,c30), xloc=xloc.bar_index, color=cor30) : na
+    pl30 := l30 < math.min(o30,c30) ? line.new(pos30, math.min(o30,c30), pos30, l30, xloc=xloc.bar_index, color=cor30) : na
+    lb30 := label.new(pos30, l30, "M30", xloc=xloc.bar_index, style=label.style_label_up, color=color.new(color.black,100), textcolor=color.gray, size=size.small)
+
+    if not na(bx60)
+        box.delete(bx60)
+    if not na(pw60)
+        line.delete(pw60)
+    if not na(pl60)
+        line.delete(pl60)
+    if not na(lb60)
+        label.delete(lb60)
+    color cor60 = c60 >= o60 ? corAlta : corBaixa
+    bx60 := box.new(pos60 - largura/2, math.max(o60,c60), pos60 + largura/2, math.min(o60,c60), xloc=xloc.bar_index, bgcolor=cor60, border_color=cor60)
+    pw60 := h60 > math.max(o60,c60) ? line.new(pos60, h60, pos60, math.max(o60,c60), xloc=xloc.bar_index, color=cor60) : na
+    pl60 := l60 < math.min(o60,c60) ? line.new(pos60, math.min(o60,c60), pos60, l60, xloc=xloc.bar_index, color=cor60) : na
+    lb60 := label.new(pos60, l60, "H1", xloc=xloc.bar_index, style=label.style_label_up, color=color.new(color.black,100), textcolor=color.gray, size=size.small)
