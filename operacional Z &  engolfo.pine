@@ -1,0 +1,47 @@
+
+//@version=6
+indicator("Operacional Z & Engolfo", overlay=true, max_lines_count=500)
+
+int   horas  = input.int(92, "Janela (horas)", minval=1)
+color corZ   = input.color(color.orange, "Cor linha Z")
+color corEng = input.color(color.purple, "Cor linha Engolfo")
+
+int MSJN = horas * 60 * 60 * 1000
+bool ok = (timenow - time) <= MSJN
+
+corpo(i)   => math.abs(close[i] - open[i])
+isGreen(i) => close[i] >= open[i]
+isRed(i)   => close[i] <  open[i]
+
+// Z BAIXA: V1 vermelha, V2 verde (corpo<=50%V1), V3 vermelha (corpo>=150%V2)
+// Linha na ABERTURA de V2 — que é o FUNDO do corpo verde (open[1])
+// A linha começa no bar de V2 (bar_index - 1) e vai 6 barras para frente
+if ok and isRed(2) and isGreen(1) and isRed(0)
+    if corpo(1) <= corpo(2) * 0.5 and corpo(0) >= corpo(1) * 1.5
+        line.new(bar_index - 1, open[1], bar_index + 5, open[1],
+             xloc=xloc.bar_index, color=corZ, width=2,
+             style=line.style_solid)
+
+// Z ALTA: V1 verde, V2 vermelha (corpo<=50%V1), V3 verde (corpo>=150%V2)
+// Linha na ABERTURA de V2 — que é o TOPO do corpo vermelho (open[1])
+if ok and isGreen(2) and isRed(1) and isGreen(0)
+    if corpo(1) <= corpo(2) * 0.5 and corpo(0) >= corpo(1) * 1.5
+        line.new(bar_index - 1, open[1], bar_index + 5, open[1],
+             xloc=xloc.bar_index, color=corZ, width=2,
+             style=line.style_solid)
+
+// ENGOLFO ALTA: >=3 verdes, vermelha engolfa >=150% da ultima verde
+// Linha na abertura da ultima verde = open[1] = FUNDO do corpo verde
+if ok and isGreen(1) and isGreen(2) and isGreen(3) and isRed(0)
+    if corpo(0) >= corpo(1) * 1.5
+        line.new(bar_index - 1, open[1], bar_index + 5, open[1],
+             xloc=xloc.bar_index, color=corEng, width=2,
+             style=line.style_solid)
+
+// ENGOLFO BAIXA: >=3 vermelhas, verde engolfa >=150% da ultima vermelha
+// Linha na abertura da ultima vermelha = open[1] = TOPO do corpo vermelho
+if ok and isRed(1) and isRed(2) and isRed(3) and isGreen(0)
+    if corpo(0) >= corpo(1) * 1.5
+        line.new(bar_index - 1, open[1], bar_index + 5, open[1],
+             xloc=xloc.bar_index, color=corEng, width=2,
+             style=line.style_solid)
